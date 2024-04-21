@@ -182,7 +182,81 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        def AB(gameState,agent,depth,a,b):
+            result = []
+
+            # Terminate state #
+            if not gameState.getLegalActions(agent):
+                return self.evaluationFunction(gameState),0
+
+            # Reached max depth #
+            if depth == self.depth:
+                return self.evaluationFunction(gameState),0
+
+            # All ghosts have finised one round: increase depth #
+            if agent == gameState.getNumAgents() - 1:
+                depth += 1
+
+            # Calculate nextAgent #
+
+            # Last ghost: nextAgent = pacman #
+            if agent == gameState.getNumAgents() - 1:
+                nextAgent = self.index
+
+            # Availiable ghosts. Pick next ghost #
+            else:
+                nextAgent = agent + 1
+
+            # For every successor find minmax value #
+            for action in gameState.getLegalActions(agent):
+                if not result: # First move
+                    nextValue = AB(gameState.generateSuccessor(agent,action),nextAgent,depth,a,b)
+
+                    # Fix result #
+                    result.append(nextValue[0])
+                    result.append(action)
+
+                    # Fix initial a,b (for the first node) #
+                    if agent == self.index:
+                        a = max(result[0],a)
+                    else:
+                        b = min(result[0],b)
+                else:
+                    # Check if minMax value is better than the previous one #
+                    # Chech if we can overpass some nodes                   #
+
+                    # There is no need to search next nodes                 #
+                    # AB Prunning is true                                   #
+                    if result[0] > b and agent == self.index:
+                        return result
+
+                    if result[0] < a and agent != self.index:
+                        return result
+
+                    previousValue = result[0] # Keep previous value
+                    nextValue = AB(gameState.generateSuccessor(agent,action),nextAgent,depth,a,b)
+
+                    # Max agent: Pacman #
+                    if agent == self.index:
+                        if nextValue[0] > previousValue:
+                            result[0] = nextValue[0]
+                            result[1] = action
+                            # a may change #
+                            a = max(result[0],a)
+
+                    # Min agent: Ghost #
+                    else:
+                        if nextValue[0] < previousValue:
+                            result[0] = nextValue[0]
+                            result[1] = action
+                            # b may change #
+                            b = min(result[0],b)
+            return result
+
+        # Call AB with initial depth = 0 and -inf and inf(a,b) values      #
+        # Get an action                                                    #
+        # Pacman plays first -> self.index                                #
+        return AB(gameState,self.index,0,-float("inf"),float("inf"))[1]
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """

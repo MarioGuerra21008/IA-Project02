@@ -221,6 +221,40 @@ class GameState:
     def isWin(self):
         return self.data._win
 
+
+    def generateSuccessor( self, agentIndex, action):
+        """
+        Returns the successor state after the specified agent takes the action.
+        """
+        # Check that successors exist
+        if self.isWin() or self.isLose(): raise Exception('Can\'t generate a successor of a terminal state.')
+
+        # Copy current state
+        state = GameState(self)
+
+        # Let agent's logic deal with its action's effects on the board
+        if agentIndex == 0:  # Pacman is moving
+            state.data._eaten = [False for i in range(state.getNumAgents())]
+            PacmanRules.applyAction( state, action )
+        else:                # A ghost is moving
+            GhostRules.applyAction( state, action, agentIndex )
+
+        # Time passes
+        if agentIndex == 0:
+            state.data.scoreChange += -TIME_PENALTY # Penalty for waiting around
+        else:
+            GhostRules.decrementTimer( state.data.agentStates[agentIndex] )
+
+        # Resolve multi-agent effects
+        GhostRules.checkDeath( state, agentIndex )
+
+        # Book keeping
+        state.data._agentMoved = agentIndex
+        state.data.score += state.data.scoreChange
+        GameState.explored.add(self)
+        GameState.explored.add(state)
+        return state
+
     #############################################
     #             Helper methods:               #
     # You shouldn't need to call these directly #
