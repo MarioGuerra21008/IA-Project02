@@ -258,6 +258,8 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         # Pacman plays first -> self.index                                #
         return AB(gameState,self.index,0,-float("inf"),float("inf"))[1]
 
+
+
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
       Your expectimax agent (question 4)
@@ -271,7 +273,39 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.expectimaxValue(gameState, 0, 0)[0]
+
+    def expectimaxValue(self, gameState, agentIndex, depth):
+        if gameState.isWin() or gameState.isLose() or depth >= self.depth * gameState.getNumAgents():
+            return 'Stop', self.evaluationFunction(gameState)
+        elif agentIndex == 0:
+            return self.maxValue(gameState, agentIndex, depth)
+        else:
+            return self.expectation(gameState, agentIndex, depth)
+
+    def maxValue(self, gameState, agentIndex, depth):
+        legalActions = gameState.getLegalActions(agentIndex)
+        if not legalActions:
+            return 'Stop', self.evaluationFunction(gameState)
+        nextAgentIndex = (agentIndex + 1) % gameState.getNumAgents()
+        values = [(action, self.expectimaxValue(gameState.generateSuccessor(agentIndex, action), nextAgentIndex, depth+1)[1]) for action in legalActions]
+        return max(values, key=lambda x: x[1])
+
+    def expectation(self, gameState, agentIndex, depth):
+        legalActions = gameState.getLegalActions(agentIndex)
+        if not legalActions:
+            return 'Stop', self.evaluationFunction(gameState)
+        nextAgentIndex = (agentIndex + 1) % gameState.getNumAgents()
+        values = [self.expectimaxValue(gameState.generateSuccessor(agentIndex, action), nextAgentIndex, depth+1)[1] for action in legalActions]
+        return 'Stop', sum(values) / len(values)
+
+
+
+
+
+
+
+
 
 def betterEvaluationFunction(currentGameState):
     """
