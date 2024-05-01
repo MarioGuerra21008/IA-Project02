@@ -288,7 +288,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         if not legalActions:
             return 'Stop', self.evaluationFunction(gameState)
         nextAgentIndex = (agentIndex + 1) % gameState.getNumAgents()
-        values = [(action, self.expectimaxValue(gameState.generateSuccessor(agentIndex, action), nextAgentIndex, depth+1)[1]) for action in legalActions]
+        values = [(action, self.expectimaxValue(gameState.getNextState(agentIndex, action), nextAgentIndex, depth+1)[1]) for action in legalActions]
         return max(values, key=lambda x: x[1])
 
     def expectation(self, gameState, agentIndex, depth):
@@ -296,7 +296,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         if not legalActions:
             return 'Stop', self.evaluationFunction(gameState)
         nextAgentIndex = (agentIndex + 1) % gameState.getNumAgents()
-        values = [self.expectimaxValue(gameState.generateSuccessor(agentIndex, action), nextAgentIndex, depth+1)[1] for action in legalActions]
+        values = [self.expectimaxValue(gameState.getNextState(agentIndex, action), nextAgentIndex, depth+1)[1] for action in legalActions]
         return 'Stop', sum(values) / len(values)
 
 
